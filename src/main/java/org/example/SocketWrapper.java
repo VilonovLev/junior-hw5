@@ -8,14 +8,13 @@ import java.util.Scanner;
 
 public class SocketWrapper implements Runnable {
     public final Socket SOCKET;
+    private final Parser PARSER;
     private final int ID;
-    private final SocketListener LISTENER;
 
-    public SocketWrapper(Socket socket, int ID, SocketListener listener) {
-
+    public SocketWrapper(Socket socket, Parser parser, int ID) {
         this.SOCKET = socket;
+        this.PARSER = parser;
         this.ID = ID;
-        this.LISTENER = listener;
     }
 
     @Override
@@ -24,7 +23,7 @@ public class SocketWrapper implements Runnable {
             while (!SOCKET.isClosed()) {
                 if (input.hasNext()) {
                     String message = input.nextLine();
-                    LISTENER.send(ID,message);
+                    PARSER.parse(ID,message);
                 }
             }
         }catch (IOException e) {
