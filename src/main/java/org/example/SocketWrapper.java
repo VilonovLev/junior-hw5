@@ -11,11 +11,11 @@ public class SocketWrapper implements Runnable {
     private final int ID;
     private final SocketListener LISTENER;
 
-    public SocketWrapper(Socket socket, int ID, SocketListener LISTENER) {
+    public SocketWrapper(Socket socket, int ID, SocketListener listener) {
 
         this.SOCKET = socket;
         this.ID = ID;
-        this.LISTENER = LISTENER;
+        this.LISTENER = listener;
     }
 
     @Override
@@ -23,8 +23,8 @@ public class SocketWrapper implements Runnable {
         try (Scanner input = new Scanner(SOCKET.getInputStream())){
             while (!SOCKET.isClosed()) {
                 if (input.hasNext()) {
-                    String mes = input.nextLine();
-                    LISTENER.send(ID,mes);
+                    String message = input.nextLine();
+                    LISTENER.send(ID,message);
                 }
             }
         }catch (IOException e) {
@@ -32,9 +32,9 @@ public class SocketWrapper implements Runnable {
         }
     }
 
-    public void sendToClient(String mess) throws IOException {
+    public void sendToClient(String message) throws IOException {
         PrintWriter output = new PrintWriter(SOCKET.getOutputStream(), true);
-        output.println(mess);
+        output.println(message);
     }
 
     public InetAddress getInetAddress() {

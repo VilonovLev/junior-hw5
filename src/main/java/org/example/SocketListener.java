@@ -13,30 +13,31 @@ public class SocketListener {
         this.server = server;
     }
 
-    public void send(int idSource, String mes) {
-        mes = mes.trim();
-        Matcher matcher = pattern.matcher(mes);
+    public void send(int idSource, String message) {
+        message = message.trim();
+        Matcher matcher = pattern.matcher(message);
 
         if (matcher.find()) {
-            for (var str:extracted(mes)) {
-                server.send(idSource,Integer.parseInt(str),mes.replaceAll("@", ""));
+            for (var addressee: extractedAddresseesFrom(message)) {
+                int idRecipient = Integer.parseInt(addressee);
+                server.send(idSource,idRecipient,message);
             }
         } else {
-            server.broadcast(idSource, mes);
+            server.broadcast(idSource, message);
         }
 
 
     }
 
-    private Queue<String> extracted(String mes) {
-        Queue<String> strings = new LinkedList<>();
+    private Queue<String> extractedAddresseesFrom(String message) {
+        Queue<String> addressees = new LinkedList<>();
         while (true) {
-            Matcher matcher = pattern.matcher(mes);
+            Matcher matcher = pattern.matcher(message);
             if (matcher.find()) {
-                strings.add(matcher.group(0).replaceAll("@", ""));
-                mes = mes.substring(strings.peek().length() + 1);
+                addressees.add(matcher.group(0).replaceAll("@", ""));
+                message = message.substring(addressees.peek().length() + 1);
             } else {
-                return strings;
+                return addressees;
             }
         }
 

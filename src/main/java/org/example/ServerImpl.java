@@ -22,7 +22,7 @@ public class ServerImpl implements Server {
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)){
-            System.out.println("Server start in port: " + PORT);
+            System.out.printf("Server start in port: %s", PORT);
             while (true) {
                 SocketWrapper socketWrapper = new SocketWrapper(
                         serverSocket.accept(),
@@ -31,7 +31,7 @@ public class ServerImpl implements Server {
                 );
                 EXECUTOR_SERVICE.execute(socketWrapper);
                 CONNECTS.add(socketWrapper);
-                System.out.println("connect new user ip#" + socketWrapper.getInetAddress() + " port#" + socketWrapper.getPort());
+                System.out.printf("connect new user ip#%s port#%s", socketWrapper.getInetAddress(),socketWrapper.getPort());
                 socketWrapper.sendToClient("Connect to messages server.");
             }
         }catch (IOException e) {
@@ -40,18 +40,18 @@ public class ServerImpl implements Server {
     }
 
     @Override
-    public void broadcast(int idSource, String mess) {
+    public void broadcast(int idSource, String message) {
         for (Integer idRecipient: CONNECTS.stream().map(SocketWrapper::getID).toList()) {
             if (idRecipient != idSource) {
-                send(idSource,idRecipient,mess);
+                send(idSource,idRecipient,message);
             }
         }
     }
 
 
     @Override
-    public void send(int idSource, int idRecipient, String mess) {
-        String text = String.format("#%d: %s",idSource,mess);
+    public void send(int idSource, int idRecipient, String message) {
+        String text = String.format("#%d: %s",idSource,message);
         try {
             for (SocketWrapper socketWrapper:CONNECTS) {
                 if (socketWrapper.getID() == idRecipient) { socketWrapper.sendToClient(text);}
