@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class ClientApp {
     public static final int SERVER_PORT = 5555;
-    public static final String URI = "192.168.0.188";
+    public static final String URI = "localhost";
 
     public static void main(String[] args) {
         try(Socket socket = new Socket(URI, SERVER_PORT)) {

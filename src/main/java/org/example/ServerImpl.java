@@ -26,12 +26,12 @@ public class ServerImpl implements Server {
             while (true) {
                 SocketWrapper socketWrapper = new SocketWrapper(
                         serverSocket.accept(),
-                        ++counter,
-                        new SocketListener(this)
+                        new MessagesParser(this),
+                        ++counter
                 );
                 EXECUTOR_SERVICE.execute(socketWrapper);
                 CONNECTS.add(socketWrapper);
-                System.out.printf("connect new user ip#%s port#%s", socketWrapper.getInetAddress(),socketWrapper.getPort());
+                System.out.printf("connect new user ip#%s port#%s\n", socketWrapper.getInetAddress(),socketWrapper.getPort());
                 socketWrapper.sendToClient("Connect to messages server.");
             }
         }catch (IOException e) {
@@ -43,16 +43,15 @@ public class ServerImpl implements Server {
     public void broadcast(int idSource, String message) {
         for (Integer idRecipient: CONNECTS.stream().map(SocketWrapper::getID).toList()) {
             if (idRecipient != idSource) {
-                send(idSource,idRecipient,message);
+                unicast(idSource,idRecipient,message);
             }
         }
     }
 
-
     @Override
-    public void send(int idSource, int idRecipient, String message) {
-        String text = String.format("#%d: %s",idSource,message);
+    public void unicast(int idSource, int idRecipient, String message) {
         try {
+            String text = String.format("#%d: %s",idSource,message);
             for (SocketWrapper socketWrapper:CONNECTS) {
                 if (socketWrapper.getID() == idRecipient) { socketWrapper.sendToClient(text);}
             }
@@ -61,5 +60,12 @@ public class ServerImpl implements Server {
         }
     }
 
-
+    @Override
+    public void drop(int id) throws IOException {
+        SocketWrapper socketWrapper = CONNECTS.stream()
+                .filter(x -> x.getID() == id)
+                .findFirst().get();
+        CONNECTS.remove(socketWrapper);
+        socketWrapper.SOCKET.close();
+    }
 }
